@@ -1,23 +1,23 @@
-#include <cstdio>
-#include <dirent.h>
+#include <iostream>
+#include <string>
+#include <fstream>
 
 int main(int argc, char **argv)
 {
-    DIR* dir;
-    struct dirent* ent;
+    std::string fileName= argv[1];
+    std::cout << "file is: " << fileName << std::endl;
 
-    const char *dirName = argv[1];
-    dir = opendir(dirName);
-
-    //if the directory doesn't exist, return error
-    if (!dir) {
-        perror("cannot read directory");
-        return -1;
-    }
-    
-    //while the current directory entry is not NULL, read it and print its name
-    while (ent = readdir(dir)) {
-        printf("%s\n", ent->d_name);
+    //open file
+    std::ifstream ifs(fileName);
+    if (ifs.is_open()) 
+    {
+        //read each line of file while no errors and print the current line
+        std::string lineData;
+        while (ifs.good())
+        {
+            std::getline(ifs, lineData);
+            std::cout << lineData << std::endl;
+        }
     }
 
     return 0;
