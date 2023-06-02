@@ -7,11 +7,11 @@ namespace LinuxResourceMonitorApi
     public class Client
     {
         private static HubConnection _connection;
+        private const string _url = "http://localhost:5227/chatHub";
 
         public static void SendConsoleKeyInfo()
         {
             ConsoleKeyInfo cki = Console.ReadKey();
-            /*Send("testuser", Console.ReadLine());*/
             Send("testuser", cki.KeyChar.ToString());
             /*if (cki.KeyChar == 'q') stop = true;*/
         }
@@ -19,7 +19,7 @@ namespace LinuxResourceMonitorApi
         public static void Main(string[] args)
         {
             _connection = new HubConnectionBuilder()
-                .WithUrl("http://localhost:5227/chatHub")
+                .WithUrl(_url)
                 .Build();
 
             _connection.Closed += async (error) =>
@@ -28,21 +28,17 @@ namespace LinuxResourceMonitorApi
                 await _connection.StartAsync();
             };
 
-            _connection.On<string>("ReceiveMessage", (message) =>
-            {
-                Console.WriteLine($"message: {message}");
-            });
-
             try
             {
                 _connection.StartAsync();
                 while (true)
                 {
-                    var j = JsonSerializer.Serialize(
-                        new CpuInfo().Frequency=new Random().Next(0, 10000)
-                    );
-                    var a = Console.ReadLine();
-                    Send("testuser", a);
+                    CpuInfo info = new CpuInfo();
+                    info.Frequency = new Random().Next(0, 10000);
+                    var j = JsonSerializer.Serialize(info);
+                    Console.WriteLine(j);
+                    Send("testuser", j);
+                    Thread.Sleep(1000);
                     //SendConsoleKeyInfo();
                 }
             }
@@ -50,6 +46,12 @@ namespace LinuxResourceMonitorApi
             {
                 Console.WriteLine("Exception: {0}", e);
             }
+
+            _connection.On<string>("ReceiveMessage", (message) =>
+            {
+                CpuInfo? a = JsonSerializer.Deserialize<CpuInfo>(message);
+                Console.WriteLine($"message: {a?.Frequency}");
+            });
         }
 
         private static async void Send(string user, string msg)

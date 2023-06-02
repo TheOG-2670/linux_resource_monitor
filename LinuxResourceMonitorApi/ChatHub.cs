@@ -7,8 +7,8 @@ namespace LinuxResourceMonitorApi
     {
         public async Task SendMessage(string user, string message) //called by client to send message to 'All' clients
         {
-            /*var j = JsonSerializer.Deserialize<object>(message);*/
-            Console.WriteLine(message);
+            var j = JsonSerializer.Deserialize<CpuInfo>(message);
+            Console.WriteLine(j);
             await Clients.All.SendAsync("ReceiveMessage", message);
         }
     }
