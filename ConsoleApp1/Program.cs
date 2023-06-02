@@ -9,12 +9,9 @@ namespace LinuxResourceMonitorApi
         private static HubConnection _connection;
         private const string _url = "http://localhost:5227/chatHub";
 
-        public static void SendConsoleKeyInfo()
-        {
-            ConsoleKeyInfo cki = Console.ReadKey();
-            Send("testuser", cki.KeyChar.ToString());
-            /*if (cki.KeyChar == 'q') stop = true;*/
-        }
+        public static string SerializeCpuInfo(CpuInfo cpuInfo) => JsonSerializer.Serialize(cpuInfo);
+
+        public static CpuInfo GetCpuInfo() => new(new Random().Next(0, 10000));
 
         public static void Main(string[] args)
         {
@@ -28,30 +25,42 @@ namespace LinuxResourceMonitorApi
                 await _connection.StartAsync();
             };
 
+            _connection.On<string>("ReceiveMessage", (message) =>
+            {
+                var a = JsonSerializer.Deserialize<object>(message);
+                Console.WriteLine($"message: {(a)}");
+            });
+
             try
             {
                 _connection.StartAsync();
-                while (true)
+                CancellationTokenSource tokenSource = new CancellationTokenSource();
+                Thread a = new Thread(() => RunInBg(tokenSource.Token));
+                a.Start();
+                if (Console.ReadKey().KeyChar == 'q')
                 {
-                    CpuInfo info = new CpuInfo();
-                    info.Frequency = new Random().Next(0, 10000);
-                    var j = JsonSerializer.Serialize(info);
-                    Console.WriteLine(j);
-                    Send("testuser", j);
-                    Thread.Sleep(1000);
-                    //SendConsoleKeyInfo();
+                    tokenSource.Cancel();
+                    a.Join();
+                    tokenSource.Dispose();
                 }
+
             }
             catch (Exception e)
             {
                 Console.WriteLine("Exception: {0}", e);
             }
+        }
 
-            _connection.On<string>("ReceiveMessage", (message) =>
+        public static void RunInBg(CancellationToken tokenSource)
+        {
+            while (true)
             {
-                CpuInfo? a = JsonSerializer.Deserialize<CpuInfo>(message);
-                Console.WriteLine($"message: {a?.Frequency}");
-            });
+                if (tokenSource.IsCancellationRequested) break;
+                var serialized = SerializeCpuInfo(GetCpuInfo());
+                /*Console.WriteLine(serialized);*/
+                Send("testuser", serialized);
+                Thread.Sleep(1000);
+            }
         }
 
         private static async void Send(string user, string msg)
