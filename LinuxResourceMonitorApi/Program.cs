@@ -1,13 +1,14 @@
-var builder = WebApplication.CreateBuilder(args);
+using LinuxResourceMonitorApi;
+
+var builder = WebApplication.CreateBuilder();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
-
-Queue<CpuInfo> CurrentFrequency = new Queue<CpuInfo>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -16,36 +17,23 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+CpuInfo currentInfo=new CpuInfo();
+
 app.MapGet("/resourcemonitor", () =>
 {
-    if(CurrentFrequency.Count > 0)
-    {
-        return Results.Ok(CurrentFrequency);
-    }
-    else
-    {
-        return Results.Problem("Queue is empty!", null, 400);
-    }
+    return currentInfo;
 })
 .WithName("GetResourceMonitor")
 .WithOpenApi();
 
-app.MapPost("/resourcemonitor", async (HttpRequest request) =>
+app.MapPost("/resourcemonitor", (CpuInfo info) =>
 {
-    CpuInfo? info= await request.ReadFromJsonAsync<CpuInfo>();
-    if(info != null) 
-    {
-        CurrentFrequency.Enqueue(info);
-        return Results.Created("/resourcemonitor", CurrentFrequency);
-    }
-    return Results.BadRequest();
+    currentInfo=info;
+    return Results.NoContent();
 })
 .WithName("PostResourceMonitor")
 .WithOpenApi();
 
-app.Run();
+app.MapHub<ChatHub>("/chatHub");
 
-internal record CpuInfo
-{
-    public long Frequency { get; set; }
-}
+app.Run();
