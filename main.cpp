@@ -3,16 +3,31 @@
 #include <vector>
 #include <fstream>
 
+std::vector<std::string> parseCpuStats(std::string& lineData)
+{
+    size_t currPos = 0, prevPos = 0;
+    std::vector<std::string> lineDataVec;
+    while ((currPos = lineData.find(" ", prevPos)) != std::string::npos) {
+        if (currPos > prevPos)
+            lineDataVec.push_back(lineData.substr(prevPos, currPos - prevPos));
+        prevPos = ++currPos;
+    }
+    lineDataVec.push_back(lineData.substr(prevPos, prevPos - 1));
+    return lineDataVec;
+}
+
 int main(int argc, char **argv)
 {
-    std::string fileName = "/proc/stat";
+    std::string fileName = argv[1];
     std::cout << "file is: " << fileName << std::endl;
 
     std::string lineData;
     std::ifstream ifs(fileName);
-    if (ifs.is_open()) 
+
+    //if the file is open and no errors while reading, get the first line from the file stream and close it
+    if (ifs.is_open())
     {
-        if(ifs.good())
+        if (ifs.good())
         {
             std::getline(ifs, lineData); //get the first line of the file that contains overall CPU stat info
             ifs.close();
@@ -21,19 +36,9 @@ int main(int argc, char **argv)
 
     std::cout << lineData << std::endl;
 
-    //parse the captured line holding CPU stat info by traversing and storing each number into a string vector
-    size_t currPos = 0, prevPos = 0;
-    std::vector<std::string> lineDataStack;
-    while ((currPos = lineData.find(" ", prevPos)) != std::string::npos) {
-        if (currPos > prevPos)
-            lineDataStack.push_back(lineData.substr(prevPos, currPos - prevPos));
-        prevPos = ++currPos;
-    }
+    std::vector<std::string> lineDataVec = parseCpuStats(lineData);
 
-    lineDataStack.push_back(lineData.substr(prevPos, prevPos - 1)); //get the last number in the string not parsed by the loop above
-
-    //print each CPU stat value
-    for (std::vector<std::string>::const_iterator it = lineDataStack.cbegin(); it != lineDataStack.cend(); it++)
+    for (std::vector<std::string>::const_iterator it = lineDataVec.cbegin(); it != lineDataVec.cend(); it++)
     {
         std::cout << *it << std::endl;
     }
