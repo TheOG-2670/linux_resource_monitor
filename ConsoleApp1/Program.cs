@@ -9,10 +9,6 @@ namespace LinuxResourceMonitorApi
         private static HubConnection _connection;
         private const string _url = "http://localhost:5227/chatHub";
 
-        public static string SerializeCpuInfo(CpuInfo cpuInfo) => JsonSerializer.Serialize(cpuInfo);
-
-        public static CpuInfo GetCpuInfo() => new(new Random().Next(0, 10000));
-
         public static void Main(string[] args)
         {
             _connection = new HubConnectionBuilder()
@@ -25,10 +21,9 @@ namespace LinuxResourceMonitorApi
                 await _connection.StartAsync();
             };
 
-            _connection.On<string>("ReceiveMessage", (message) =>
+            _connection.On<ParamRequest>("ReceiveMessage", (req) =>
             {
-                var a = JsonSerializer.Deserialize<object>(message);
-                Console.WriteLine($"message: {(a)}");
+                Console.WriteLine($"message: {req.message}");
             });
 
             try
@@ -56,9 +51,8 @@ namespace LinuxResourceMonitorApi
             while (true)
             {
                 if (tokenSource.IsCancellationRequested) break;
-                var serialized = SerializeCpuInfo(GetCpuInfo());
                 /*Console.WriteLine(serialized);*/
-                Send("testuser", serialized);
+                Send(".net client", JsonSerializer.Serialize(new CpuInfo { Frequency=100 }));
                 Thread.Sleep(1000);
             }
         }
@@ -67,7 +61,7 @@ namespace LinuxResourceMonitorApi
         {
             try
             {
-                await _connection.InvokeAsync("SendMessage", user, msg);
+                await _connection.InvokeAsync("SendMessage", new ParamRequest { userId=user, message=msg });
             }
             catch (Exception e)
             {

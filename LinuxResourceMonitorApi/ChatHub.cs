@@ -5,11 +5,11 @@ namespace LinuxResourceMonitorApi
 {
     public class ChatHub : Hub //class that handles client-server communications
     {
-        public async Task SendMessage(string user, string message) //called by client to send message to 'All' clients
+        public async Task SendMessage(ParamRequest req) //called by client to send message to 'All' clients
         {
-            var j = JsonSerializer.Deserialize<object>(message);
-            Console.WriteLine(j);
-            await Clients.All.SendAsync("ReceiveMessage", message);
+            Console.WriteLine($"{req.userId} : {req.message}");
+            var j = JsonSerializer.Deserialize<ParamRequest>(req.message);
+            await Clients.All.SendAsync("ReceiveMessage", req);
         }
 
         public override async Task OnConnectedAsync()
