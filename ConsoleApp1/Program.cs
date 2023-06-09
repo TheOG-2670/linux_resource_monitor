@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using System.Net;
+using System.Net.WebSockets;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -6,66 +8,29 @@ namespace LinuxResourceMonitorApi
 {
     public class Client
     {
-        private static HubConnection _connection;
-        private const string _url = "http://localhost:5227/chatHub";
-
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            _connection = new HubConnectionBuilder()
-                .WithUrl(_url)
-                .Build();
-
-            _connection.Closed += async (error) =>
+            Uri uri = new Uri("ws://localhost:5227/ws");
+            ClientWebSocket ws = new ClientWebSocket();
+            await ws.ConnectAsync(uri, CancellationToken.None);
+            byte[] buffer = new byte[256];
+            while (ws.State == WebSocketState.Open)
             {
-                await Task.Delay(new Random().Next(0, 5) * 1000);
-                await _connection.StartAsync();
-            };
+                ParamRequest paramRequest= new ParamRequest();
+                paramRequest.userId = ".net client";
+                paramRequest.message = JsonSerializer.Serialize(new CpuInfo(1000));
 
-            _connection.On<ParamRequest>("ReceiveMessage", (req) =>
-            {
-                Console.WriteLine($"message: {req.message}");
-            });
-
-            try
-            {
-                _connection.StartAsync();
-                CancellationTokenSource tokenSource = new CancellationTokenSource();
-                Thread a = new Thread(() => RunInBg(tokenSource.Token));
-                a.Start();
-                if (Console.ReadKey().KeyChar == 'q')
+                string message = JsonSerializer.Serialize(paramRequest);
+                await ws.SendAsync(Encoding.ASCII.GetBytes(message), WebSocketMessageType.Text, true, CancellationToken.None);
+                var result = await ws.ReceiveAsync(buffer, CancellationToken.None);
+                if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    tokenSource.Cancel();
-                    a.Join();
-                    tokenSource.Dispose();
+                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
                 }
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception: {0}", e);
-            }
-        }
-
-        public static void RunInBg(CancellationToken tokenSource)
-        {
-            while (true)
-            {
-                if (tokenSource.IsCancellationRequested) break;
-                /*Console.WriteLine(serialized);*/
-                Send(".net client", JsonSerializer.Serialize(new CpuInfo { Frequency=100 }));
-                Thread.Sleep(1000);
-            }
-        }
-
-        private static async void Send(string user, string msg)
-        {
-            try
-            {
-                await _connection.InvokeAsync("SendMessage", new ParamRequest { userId=user, message=msg });
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception: {e}");
+                else
+                {
+                    Console.WriteLine(Encoding.ASCII.GetString(buffer, 0, result.Count));
+                }
             }
         }
 
