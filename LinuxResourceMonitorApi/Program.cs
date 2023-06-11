@@ -21,15 +21,7 @@ app.Use(async (context, next) =>
         if (context.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-            var buffer = new byte[256];
-            while (true)
-            {
-                var result=await webSocket.ReceiveAsync(buffer, CancellationToken.None);
-                ParamRequest? r=JsonSerializer.Deserialize<ParamRequest>(Encoding.ASCII.GetString(buffer, 0, result.Count));
-                Console.WriteLine(r);
-                await webSocket.SendAsync(Encoding.ASCII.GetBytes(r.ToString()), WebSocketMessageType.Text, true, CancellationToken.None);
-                await Task.Delay(1000);
-            }
+            await Echo(webSocket);
         }
         else
         {
@@ -43,4 +35,24 @@ app.Use(async (context, next) =>
 
 });
 
-await app.RunAsync();
+static async Task Echo(WebSocket webSocket)
+{
+    var buffer = new byte[500];
+    WebSocketReceiveResult result=new WebSocketReceiveResult(0,WebSocketMessageType.Text, true);
+    ParamRequest? r = new ParamRequest();
+    while (!result.CloseStatus.HasValue)
+    {
+        result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+        if (result.MessageType == WebSocketMessageType.Close)
+        {
+            await webSocket.CloseOutputAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            break;
+        }
+        r = JsonSerializer.Deserialize<ParamRequest>(Encoding.ASCII.GetString(buffer, 0, result.Count));
+        Console.WriteLine(r);
+        await webSocket.SendAsync(Encoding.ASCII.GetBytes(r.ToString()), WebSocketMessageType.Text, true, CancellationToken.None);
+    }
+    Console.WriteLine($"{r.userId} disconnected");
+}
+
+app.Run();
