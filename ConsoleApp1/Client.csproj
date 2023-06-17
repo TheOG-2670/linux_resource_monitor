@@ -12,8 +12,4 @@
     <Compile Include="..\LinuxResourceMonitorApi\ParamRequest.cs" Link="ParamRequest.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.5" />
-  </ItemGroup>
-
 </Project>

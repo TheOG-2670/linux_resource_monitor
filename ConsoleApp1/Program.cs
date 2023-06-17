@@ -10,15 +10,21 @@ namespace LinuxResourceMonitorApi
 {
     public class Client
     {
-        static ClientWebSocket ws = new ClientWebSocket();
-        static CancellationTokenSource cts = new CancellationTokenSource();
+        /**
+         * class variables accessible to Main and GetResponse methods
+         */
+        static readonly ClientWebSocket ws = new ClientWebSocket();
+        //
         public static async Task Main(string[] args)
         {
+            /**
+             * Asynchronously establish a connection to the websocket API and wait to receive the response
+             * in the GetResponse method.
+             */
             Uri uri = new Uri(args[0]);
-            cts.CancelAfter(TimeSpan.FromSeconds(5));
             try
             {
-                await ws.ConnectAsync(uri, cts.Token);
+                await ws.ConnectAsync(uri, CancellationToken.None);
             }
             catch (WebSocketException ex)
             {
@@ -31,36 +37,44 @@ namespace LinuxResourceMonitorApi
 
         public static async Task GetResponse()
         {
-
+            /**
+             * While the connection is open, asynchronously send data to the server and print the response when 
+             * received. If the response includes a flag to close the connection, terminate the connection and 
+             * break out of the loop.
+             */
             byte[] buffer = new byte[256];
-            while (ws.State == WebSocketState.Open)
+            while (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseSent)
             {
+                Console.WriteLine("enter a message: ");
+                string? message = Console.ReadLine();
+                
                 ParamRequest paramRequest = new ParamRequest()
                 {
                     userId = ".net client",
-                    message = JsonSerializer.Serialize(new CpuInfo(new Random().Next(0, 1000)))
+                    message = message
                 };
 
-                string message = JsonSerializer.Serialize(paramRequest);
+                string serializedMessage = JsonSerializer.Serialize(paramRequest);
 
                 try
                 {
-                    await ws.SendAsync(Encoding.ASCII.GetBytes(message), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, cts.Token);
+                    await ws.SendAsync(Encoding.ASCII.GetBytes(serializedMessage), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, CancellationToken.None);
                     var result = await ws.ReceiveAsync(buffer, CancellationToken.None);
+                    
+                    Console.WriteLine("response from server:");
                     Console.WriteLine(Encoding.ASCII.GetString(buffer, 0, result.Count));
 
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        await ws.CloseOutputAsync(ws.CloseStatus.Value, string.Empty, CancellationToken.None);
-                        break;
+                    if(result.MessageType==WebSocketMessageType.Close) {
+                        Console.WriteLine("close sent");
                     }
+
                 }
                 catch (Exception ex) when (ex is WebSocketException || ex is TaskCanceledException)
                 {
-                    break;
+                    Console.WriteLine($"exception:\n {ex.Message}");
                 }
+                Console.WriteLine();
             }
-            await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
         }
 
     }

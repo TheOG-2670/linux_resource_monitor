@@ -43,13 +43,13 @@ static async Task Echo(WebSocket webSocket)
     while (!result.CloseStatus.HasValue)
     {
         result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
-        if (result.MessageType == WebSocketMessageType.Close)
-        {
-            await webSocket.CloseOutputAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-            break;
-        }
         r = JsonSerializer.Deserialize<ParamRequest>(Encoding.ASCII.GetString(buffer, 0, result.Count));
         Console.WriteLine(r);
+        if (r.message=="q")
+        {
+            await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, result.CloseStatusDescription, CancellationToken.None);
+            break;
+        }
         await webSocket.SendAsync(Encoding.ASCII.GetBytes(r.ToString()), WebSocketMessageType.Text, true, CancellationToken.None);
     }
     Console.WriteLine($"{r.userId} disconnected");
