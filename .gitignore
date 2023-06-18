@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 /LinuxResourceMonitorApi/wwwroot/js/signalr
 /LinuxResourceMonitorApi/libman.json
+/aspnet_websocket/LinuxResourceMonitorApi/wwwroot/js/signalr
+/aspnet_websocket/LinuxResourceMonitorApi/libman.json
