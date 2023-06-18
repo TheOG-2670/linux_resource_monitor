@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <Compile Include="..\LinuxResourceMonitorApi\CpuInfo.cs" Link="CpuInfo.cs" />
-    <Compile Include="..\LinuxResourceMonitorApi\ParamRequest.cs" Link="ParamRequest.cs" />
+    <Compile Include="..\LinuxResourceMonitorApi\DataDTO.cs" Link="DataDTO.cs" />
   </ItemGroup>
 
 </Project>

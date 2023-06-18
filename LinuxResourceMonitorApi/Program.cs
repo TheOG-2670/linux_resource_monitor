@@ -38,21 +38,21 @@ app.Use(async (context, next) =>
 static async Task Echo(WebSocket webSocket)
 {
     var buffer = new byte[500];
-    WebSocketReceiveResult result=new WebSocketReceiveResult(0,WebSocketMessageType.Text, true);
-    ParamRequest? r = new ParamRequest();
-    while (!result.CloseStatus.HasValue)
+    WebSocketReceiveResult result;
+    DataDTO? r = new DataDTO();
+    do
     {
         result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
-        r = JsonSerializer.Deserialize<ParamRequest>(Encoding.ASCII.GetString(buffer, 0, result.Count));
-        Console.WriteLine(r);
-        if (r.message=="q")
+        if (result.MessageType == WebSocketMessageType.Text)
         {
-            await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, result.CloseStatusDescription, CancellationToken.None);
-            break;
+            r = JsonSerializer.Deserialize<DataDTO>(Encoding.ASCII.GetString(buffer, 0, result.Count));
+            Console.WriteLine(r);
+            await webSocket.SendAsync(Encoding.ASCII.GetBytes(r.ToString()), WebSocketMessageType.Text, true, CancellationToken.None);
         }
-        await webSocket.SendAsync(Encoding.ASCII.GetBytes(r.ToString()), WebSocketMessageType.Text, true, CancellationToken.None);
     }
+    while (!result.CloseStatus.HasValue);
     Console.WriteLine($"{r.userId} disconnected");
+    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "connection terminated", CancellationToken.None);
 }
 
 app.Run();
