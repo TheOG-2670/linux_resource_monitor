@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Client": {
+      "commandName": "Project",
+      "commandLineArgs": "ws://localhost:5227/ws"
+    }
+  }
+}
