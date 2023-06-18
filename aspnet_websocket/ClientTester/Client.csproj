@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\LinuxResourceMonitorApi\CpuInfo.cs" Link="CpuInfo.cs" />
-    <Compile Include="..\LinuxResourceMonitorApi\DataDTO.cs" Link="DataDTO.cs" />
+    <Compile Include="..\ASPNETWebSocketAPI\CpuInfo.cs" Link="CpuInfo.cs" />
+    <Compile Include="..\ASPNETWebSocketAPI\DataDTO.cs" Link="DataDTO.cs" />
   </ItemGroup>
 
 </Project>
