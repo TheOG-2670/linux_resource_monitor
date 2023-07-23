@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SystemStatsViewClient</string>
+    <string name="disconnectButtonLabel">disconnect</string>
+    <string name="connectButtonLabel">connect</string>
+    <string name="eventLogTitle"><u>event log</u></string>
+
+    <string name="connectedStatus">connected</string>
+    <string name="disconnectedStatus">disconnected</string>
+
+</resources>
