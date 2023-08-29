@@ -45,11 +45,19 @@ public class MainActivity extends AppCompatActivity {
 
         callback=new WebSocketListenerCallback() {
             @Override
-            public void websocketSuccess(WebSocket w, Response r) {
+            public void websocketSuccess() {
                 runOnUiThread(()-> {
                     stringBuilder.append("connected!\n");
                     tv.setText(stringBuilder);
                     connectionStatusTextView.setText(getResources().getText(R.string.connectedStatus));
+                });
+            }
+
+            @Override
+            public void websocketMessageResponse(String text) {
+                runOnUiThread(()-> {
+                    stringBuilder.append("\nSERVER RESPONSE:\n").append(text);
+                    tv.setText(stringBuilder);
                 });
             }
 
@@ -74,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
         connectionStatusTextView.setText(getResources().getText(R.string.disconnectedStatus));
         connectButton.setOnClickListener(l->{
+            stringBuilder.setLength(0);
+            tv.setText(stringBuilder);
             Log.d("okhttp3_websocket", "before newWebSocket called: " + ws);
 
             ws=client.newWebSocket(new Request.Builder().url(WEBSOCKET_URL).build(), listener);
