@@ -17,14 +17,6 @@ ClientTester/Program.cs
 ClientTester/Properties/launchSettings.json
 LinuxResourceStats/obj/x64/Debug/iconfig.json
 SystemStats.sln
-SystemStatsViewClient/.gradle/7.3.3/executionHistory/executionHistory.bin
-SystemStatsViewClient/.gradle/7.3.3/executionHistory/executionHistory.lock
-SystemStatsViewClient/.gradle/7.3.3/fileHashes/fileHashes.bin
-SystemStatsViewClient/.gradle/7.3.3/fileHashes/fileHashes.lock
-SystemStatsViewClient/.gradle/7.3.3/fileHashes/resourceHashesCache.bin
-SystemStatsViewClient/.gradle/buildOutputCleanup/buildOutputCleanup.lock
-SystemStatsViewClient/.gradle/buildOutputCleanup/outputFiles.bin
-SystemStatsViewClient/.gradle/file-system.probe
 SystemStatsViewClient/.idea/workspace.xml
 SystemStatsViewClient/app/build/generated/source/buildConfig/debug/com/example/systemstatsviewclient/BuildConfig.java
 SystemStatsViewClient/app/build/intermediates/annotation_processor_list/debug/annotationProcessors.json
@@ -547,6 +539,3 @@ SystemStatsViewClient/app/build/intermediates/stable_resource_ids_file/debug/sta
 SystemStatsViewClient/app/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt
 SystemStatsViewClient/app/build/outputs/logs/manifest-merger-debug-report.txt
 SystemStatsViewClient/app/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin
-SystemStatsViewClient/app/src/main/java/com/example/systemstatsviewclient/MainActivity.java
-SystemStatsViewClient/app/src/main/java/com/example/systemstatsviewclient/WebSocketListener.java
-SystemStatsViewClient/app/src/main/java/com/example/systemstatsviewclient/WebSocketListenerCallback.java
