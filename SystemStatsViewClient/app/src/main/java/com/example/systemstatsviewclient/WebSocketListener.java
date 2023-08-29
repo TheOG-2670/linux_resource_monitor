@@ -23,13 +23,14 @@ public class WebSocketListener extends okhttp3.WebSocketListener {
         super.onOpen(webSocket, response);
         viewModel.setSocketState(true);
         Log.d(TAG, "socket opened!");
-        callback.websocketSuccess(webSocket, response);
+        callback.websocketSuccess();
     }
 
     @Override
     public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
         super.onMessage(webSocket, text);
         Log.d(TAG, "message: "+text);
+        callback.websocketMessageResponse(text);
     }
 
     @Override
