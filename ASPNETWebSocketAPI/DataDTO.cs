@@ -1,8 +1,13 @@
 ﻿namespace LinuxResourceMonitorApi
 {
-    public record DataDTO
+    public class DataDTO
     {
-        public string userId { get; set; }
-        public string message { get; set; }
+        public DataDTO(string id, string? message = "")
+        {
+            UserId = id;
+            Message = message;
+        }
+        public string? UserId { get; set; }
+        public string? Message { get; set; }
     }
 }
